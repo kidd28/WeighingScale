@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "426165426894",
+    "project_id": "weighing-scale-f0289",
+    "storage_bucket": "weighing-scale-f0289.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:426165426894:android:ac313af65388cfbbc14e9f",
+        "android_client_info": {
+          "package_name": "com.example.weighingscale"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "426165426894-376lvbvdk9jvnjs4m4lbe4sqnkn1ln78.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.weighingscale",
+            "certificate_hash": "70828096f0271fa58aec5f79b9918d6dfb2f2455"
+          }
+        },
+        {
+          "client_id": "426165426894-j0enqblp7choaookn45k678il3bir34p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrAhTFRfwZQQHzTpttc7AOKYVIsQkxJLg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "426165426894-j0enqblp7choaookn45k678il3bir34p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
