@@ -34,7 +34,6 @@ public class Dashboard extends AppCompatActivity {
                 String Sale_id = String.valueOf(System.currentTimeMillis());
                 intent.putExtra("SalesId", Sale_id);
                 startActivity(intent);
-
             }
         });
     }

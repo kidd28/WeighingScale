@@ -51,7 +51,6 @@ public class ChangeAddItemAdapters extends RecyclerView.Adapter<ChangeAddItemAda
         TextView name, price;
         public HolderAdapter(@NonNull View itemView) {
             super(itemView);
-
             layout = itemView.findViewById(R.id.layout);
             name = itemView.findViewById(R.id.name);
             price = itemView.findViewById(R.id.price);

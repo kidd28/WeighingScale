@@ -1,5 +1,6 @@
 package com.example.weighingscale.Adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -47,13 +48,13 @@ public class SelectItemAdapter extends RecyclerView.Adapter<SelectItemAdapter.Ho
         holder.layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 Intent i = new Intent(context, CreateList.class);
                 i.putExtra("Name",name);
                 i.putExtra("Price", price);
                 i.putExtra("Id", model.getId());
                 i.putExtra("SalesId", SalesId);
                 context.startActivity(i);
+                ((Activity)context).finish();
             }
         });
 

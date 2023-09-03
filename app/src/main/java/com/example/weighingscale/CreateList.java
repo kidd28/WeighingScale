@@ -27,6 +27,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,7 +43,8 @@ public class CreateList extends AppCompatActivity {
     EditText input;
     Button add, next, cancel, save;
 
-    String Name, Price, Id, SaleId;
+    String Name, Price, Id, SaleId, Date, Month;
+
 
     int current, sum, total, totalAmount;
 
@@ -72,6 +74,16 @@ public class CreateList extends AppCompatActivity {
         Id = getIntent().getExtras().getString("Id");
         SaleId = getIntent().getExtras().getString("SalesId");
 
+        LocalDate dateObj = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            dateObj = LocalDate.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+            DateTimeFormatter MonthFormat = DateTimeFormatter.ofPattern("MM-yyyy");
+            Date = dateObj.format(formatter);
+            Month = dateObj.format(MonthFormat);
+        }
+
+
         name.setText(Name);
         totalAmount = 0;
         sum = 0;
@@ -79,7 +91,7 @@ public class CreateList extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 compute();
-                loadSale(SaleId);
+
             }
         });
         next.setOnClickListener(new View.OnClickListener() {
@@ -89,41 +101,20 @@ public class CreateList extends AppCompatActivity {
                 Intent i = new Intent(CreateList.this, SelectItem.class);
                 i.putExtra("SalesId", SaleId);
                 startActivity(i);
-                loadSale(SaleId);
             }
         });
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(CreateList.this);
-                builder.setTitle("Choose Action");
-                builder.setMessage("Are you sure you want to cancel this transaction?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Sales").child("This Month").child(SaleId);
-                        databaseReference.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void unused) {
-                                Toast.makeText(CreateList.this, "Cancelled", Toast.LENGTH_LONG).show();
-                                startActivity(new Intent(CreateList.this, Dashboard.class));
-                                CreateList.this.finish();
-                            }
-                        });
-                    }
-                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                    }
-                });
-                builder.show();
+                cancel();
             }
         });
+
         loadSale(SaleId);
         displayTotal();
     }
     public void compute() {
-        DatabaseReference database = FirebaseDatabase.getInstance().getReference("Sales").child("This Month").child(SaleId);
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference("Sales").child(Month.toString()).child(SaleId);
         database.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -150,14 +141,16 @@ public class CreateList extends AppCompatActivity {
                     hashMap.put("Price", Price);
                     hashMap.put("Id", Id);
                     hashMap.put("Total", String.valueOf(total));
+                    hashMap.put("Date", Date);
                     database.child(Name).updateChildren(hashMap).addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void unused) {
                             input.setText("");
+                            loadSale(SaleId);
+                            displayTotal();
                         }
                     });
                 }
-
             }
 
             @Override
@@ -166,8 +159,8 @@ public class CreateList extends AppCompatActivity {
         });
     }
 
-    public void loadSale(String SaleId) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Sales").child("This Month").child(SaleId);
+    private void loadSale(String SaleId) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Sales").child(Month).child(SaleId);
         reference.addValueEventListener(new ValueEventListener() {
                 @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -181,10 +174,12 @@ public class CreateList extends AppCompatActivity {
                         itemModels.add(model);
                     }
                 }
-                HashMap<String, Object> hashMap = new HashMap<>();
-                hashMap.put("TotalAmount", String.valueOf(total));
-                reference.updateChildren(hashMap);
 
+                if (total !=0){
+                    HashMap<String, Object> hashMap = new HashMap<>();
+                    hashMap.put("TotalAmount", String.valueOf(total));
+                    reference.updateChildren(hashMap);
+                }
                 itemListAdapter = new ItemListAdapter(CreateList.this, itemModels);
                 rv.setAdapter(itemListAdapter);
                 itemListAdapter.notifyDataSetChanged();
@@ -196,7 +191,7 @@ public class CreateList extends AppCompatActivity {
         });
     }
     public void displayTotal(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Sales").child("This Month").child(SaleId);
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Sales").child(Month).child(SaleId);
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -207,8 +202,34 @@ public class CreateList extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         });
-
-
     }
-
+    public void cancel(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(CreateList.this);
+        builder.setTitle("Choose Action");
+        builder.setMessage("Are you sure you want to cancel this transaction?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Sales").child(Month).child(SaleId);
+                databaseReference.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        databaseReference.child("TotalAmount").removeValue();
+                        Toast.makeText(CreateList.this, "Cancelled", Toast.LENGTH_LONG).show();
+                        startActivity(new Intent(CreateList.this, Dashboard.class));
+                        CreateList.this.finish();
+                    }
+                });
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+        builder.show();
+    }
+    @Override
+    public void onBackPressed() {
+        cancel();
+    }
 }
