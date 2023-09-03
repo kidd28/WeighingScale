@@ -36,5 +36,11 @@ public class Dashboard extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        inventory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
     }
 }

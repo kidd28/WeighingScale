@@ -12,6 +12,9 @@
         android:theme="@style/Theme.WeighingScale"
         tools:targetApi="31">
         <activity
+            android:name=".InventoryDashboard"
+            android:exported="false" />
+        <activity
             android:name=".AddChangeItemUi"
             android:exported="false" />
         <activity
@@ -22,8 +25,8 @@
             android:exported="false" />
         <activity
             android:name=".CreateList"
-            android:noHistory="true"
-            android:exported="false" />
+            android:exported="false"
+            android:noHistory="true" />
         <activity
             android:name=".Dashboard"
             android:exported="false" />

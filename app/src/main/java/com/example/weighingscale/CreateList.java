@@ -43,7 +43,7 @@ public class CreateList extends AppCompatActivity {
     EditText input;
     Button add, next, cancel, save;
 
-    String Name, Price, Id, SaleId, Date, Month;
+    String Name, Price, Id, SaleId, Date, Month, Year;
 
 
     int current, sum, total, totalAmount;
@@ -79,8 +79,10 @@ public class CreateList extends AppCompatActivity {
             dateObj = LocalDate.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
             DateTimeFormatter MonthFormat = DateTimeFormatter.ofPattern("MM-yyyy");
+            DateTimeFormatter YearFormat = DateTimeFormatter.ofPattern("yyyy");
             Date = dateObj.format(formatter);
             Month = dateObj.format(MonthFormat);
+            Year = dateObj.format(YearFormat);
         }
 
 
@@ -114,7 +116,8 @@ public class CreateList extends AppCompatActivity {
         displayTotal();
     }
     public void compute() {
-        DatabaseReference database = FirebaseDatabase.getInstance().getReference("Sales").child(Month.toString()).child(SaleId);
+        DatabaseReference database = FirebaseDatabase.getInstance().getReference("Sales").child(Year).child(Month.toString()).child(SaleId);
+
         database.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -126,7 +129,7 @@ public class CreateList extends AppCompatActivity {
 
                 for (DataSnapshot ds : snapshot.getChildren()) {
                     System.out.println(ds.child("Id").getValue());
-                    if (!ds.getKey().equals("TotalAmount")) {
+                    if (!ds.getKey().equals("TotalAmount") &&!ds.getKey().equals("Date")) {
                         if (ds.child("Id").getValue().equals(Id)) {
                             sum = Integer.parseInt(String.valueOf(ds.child("Kg").getValue()));
                         }
@@ -146,6 +149,9 @@ public class CreateList extends AppCompatActivity {
                         @Override
                         public void onSuccess(Void unused) {
                             input.setText("");
+                            HashMap<String, Object> hashMap1 = new HashMap<>();
+                            hashMap1.put("Date", Date);
+                            database.updateChildren(hashMap1);
                             loadSale(SaleId);
                             displayTotal();
                         }
@@ -160,14 +166,14 @@ public class CreateList extends AppCompatActivity {
     }
 
     private void loadSale(String SaleId) {
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Sales").child(Month).child(SaleId);
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Sales").child(Year).child(Month).child(SaleId);
         reference.addValueEventListener(new ValueEventListener() {
                 @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 itemModels.clear();
                 int total = 0;
                 for (DataSnapshot ds : snapshot.getChildren()) {
-                    if (!ds.getKey().equals("TotalAmount")) {
+                    if (!ds.getKey().equals("TotalAmount") &&!ds.getKey().equals("Date") ) {
                         ItemModel model = ds.getValue(ItemModel.class);
                         int cost = Integer.valueOf(model.getTotal());
                         total = total + cost;
@@ -191,12 +197,16 @@ public class CreateList extends AppCompatActivity {
         });
     }
     public void displayTotal(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Sales").child(Month).child(SaleId);
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Sales").child(Year).child(Month).child(SaleId);
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 System.out.println(snapshot.child("TotalAmount").getValue());
-                tv_total.setText("TOTAL: P"+ snapshot.child("TotalAmount").getValue());
+                if(snapshot.child("TotalAmount").getValue() == null){
+                    tv_total.setText("TOTAL: 0");
+                }else {
+                    tv_total.setText("TOTAL: " + snapshot.child("TotalAmount").getValue());
+                }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
@@ -209,7 +219,7 @@ public class CreateList extends AppCompatActivity {
         builder.setMessage("Are you sure you want to cancel this transaction?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Sales").child(Month).child(SaleId);
+                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Sales").child(Year).child(Month).child(SaleId);
                 databaseReference.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
